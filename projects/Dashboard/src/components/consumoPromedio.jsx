@@ -3,9 +3,9 @@ import { PieChart, Pie, Cell, Tooltip } from "recharts";
 
 const RADIAN = Math.PI / 180;
 const data = [
-  { name: "Consumo nulo", value: 50, color: "#ff0000" },
-  { name: "Consumo Promedio", value: 50, color: "#0000ff" },
-  { name: "Consumo excesivo", value: 50, color: "#ff0000" },
+  { name: "Consumo nulo", value: 50, color: "#fc3535" },
+  { name: "Consumo Promedio", value: 50, color: "#2d7ef7" },
+  { name: "Consumo excesivo", value: 50, color: "#fc3535" },
 ];
 const cx = 160; //centerX
 const cy = 120; //centerY
@@ -68,6 +68,10 @@ export default function ConsumoPromedio() {
           y={cy + 25}
           textAnchor="middle"
           dominantBaseline="middle"
+          style={{
+            fill: value < 50 ? "red" : value <= 100 ? "blue" : "red",
+            fontSize: "1.5rem",
+          }}
         >
           {value} Litros de Agua
         </text>

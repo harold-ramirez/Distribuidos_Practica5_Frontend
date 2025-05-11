@@ -1,6 +1,7 @@
 import ConsumoMeses from "./consumoMeses";
 import ConsumoPromedio from "./consumoPromedio";
 import ConsumoZonas from "./consumoZonas";
+import Mapa from "./mapa";
 
 export default function Dashboard() {
   const cityConsumption = 25254325;
@@ -9,8 +10,8 @@ export default function Dashboard() {
   return (
     <span className="p-1  w-full h-full text-black overflow-hidden">
       <div className="w-full h-full rounded-xl grid grid-cols-9 grid-rows-6 gap-2">
-        <div class="bg-gray-300 rounded-xl col-start-1 row-start-1 col-span-5 row-span-6">
-          1
+        <div class="bg-gray-300 rounded-xl col-start-1 row-start-1 col-span-5 row-span-6 p-1 wrap-anywhere">
+          <Mapa />
         </div>
         <div class="bg-gray-300 rounded-xl col-start-6 row-start-1 col-span-2 row-span-2 p-1 flex flex-col wrap-anywhere">
           <strong>Consumo de la Ciudad m3/hora</strong>
@@ -20,13 +21,13 @@ export default function Dashboard() {
         </div>
         <div class="bg-gray-300 rounded-xl col-start-8 row-start-1 col-span-2 row-span-1 px-3 flex flex-col wrap-anywhere">
           <strong>Medidores Reportando:</strong>
-          <p className="text-4xl font-semibold flex flex-1 items-center justify-end">
+          <p className="text-6xl font-semibold flex flex-1 items-center justify-end">
             {workingMeters.toLocaleString("es-ES")}
           </p>
         </div>
         <div class="bg-gray-300 rounded-xl col-start-8 row-start-2 col-span-2 row-span-1 px-3 flex flex-col wrap-anywhere">
           <strong>Medidores con Errores:</strong>
-          <p className="text-4xl text-red-500 font-semibold flex flex-1 items-center justify-end">
+          <p className="text-6xl text-red-500 font-semibold flex flex-1 items-center justify-end">
             {failingMeters.toLocaleString("es-ES")}
           </p>
         </div>
