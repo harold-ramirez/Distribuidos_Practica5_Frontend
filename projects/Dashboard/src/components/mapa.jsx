@@ -25,14 +25,33 @@ export default function Mapa() {
     medidores.forEach((medidor) => {
       new maptilersdk.Marker({ color: "#FF0000" })
         .setLngLat([medidor.longitud, medidor.latitud]) //primero longitud y luego latitud
+        .setPopup(
+          new maptilersdk.Popup({ offset: 25 }).setHTML(
+            "<span>" +
+              "<strong>Cuenta: </strong>" +
+              medidor.cuenta +
+              "<br>" +
+              "<strong>Propietario: </strong>" +
+              medidor.propietario +
+              "<br>" +
+              "<strong>Distrito: </strong>" +
+              medidor.distrito +
+              "<br>" +
+              "<strong>Medidor: </strong>" +
+              medidor.medidor +
+              "<br>" +
+              "<strong>Tipo: </strong>" +
+              medidor.tipo +
+              "</span>"
+          )
+        )
         .addTo(map.current);
     });
-
   }, [cercado.lng, cercado.lat, zoom, medidores]);
 
   return (
-    <div className="map-wrap relative w-full h-full">
-      <div ref={mapContainer} className="map absolute w-full h-full" />
+    <div className="relative w-full h-full map-wrap">
+      <div ref={mapContainer} className="absolute w-full h-full map" />
     </div>
   );
 }

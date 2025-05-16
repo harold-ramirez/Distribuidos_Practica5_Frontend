@@ -1,90 +1,146 @@
+import { useState, useRef, useEffect } from "react";
 
+const treeData = [
+  {
+    label: "SubAlcaldía Tunari",
+    value: "tunari",
+    children: [
+      {
+        label: "Distrito 1",
+        value: "d1",
+        children: [
+          { label: "Zona QUERU QUERU ALTO", value: "z1" },
+          { label: "Zona ARANJUEZ ALTO", value: "z2" },
+          { label: "Zona MESADILLA", value: "z3" },
+        ],
+      },
+      {
+        label: "Distrito 2",
+        value: "d2",
+        children: [
+          { label: "Zona MAYORAZGO", value: "z4" },
+          { label: "Zona CALA CALA", value: "z5" },
+        ],
+      },
+    ],
+  },
+  {
+    label: "SubAlcaldía Molle",
+    value: "molle",
+    children: [
+      {
+        label: "Distrito 3",
+        value: "d3",
+        children: [
+          { label: "Zona SARCO", value: "z6" },
+          { label: "Zona HIPODROMO", value: "z7" },
+        ],
+      },
+    ],
+  },
+];
 
-export default function DropdownList(){
+function getAllDescendants(node) {
+  if (!node.children) return [];
+  return node.children.flatMap((child) => [
+    child.value,
+    ...getAllDescendants(child),
+  ]);
+}
+
+function TreeNode({ node, selected, toggle }) {
+  const isChecked = selected.has(node.value);
+
+  const handleToggle = () => {
+    const descendants = getAllDescendants(node);
+    toggle(node.value, descendants);
+  };
 
   return (
-    <select className="h-10 border border-black rounded-lg p-1 hover:cursor-pointer">
-      <option value="">(Todo) Cochabamba</option>
-      <optgroup label="Subalcadías">
-        <option value="">Tunari</option>
-        <option value="">Molle</option>
-        <option value="">Alejo Calatayud</option>
-        <option value="">Valle Hermoso</option>
-        <option value="">Itocta</option>
-        <option value="">Adela Zamudio</option>
-      </optgroup>
-      <optgroup label="Distritos">
-        <option value="">Distrito 1</option>
-        <option value="">Distrito 2</option>
-        <option value="">Distrito 13</option>
-        <option value="">Distrito 3</option>
-        <option value="">Distrito 4</option>
-        <option value="">Distrito 5</option>
-        <option value="">Distrito 8</option>
-        <option value="">Distrito 6</option>
-        <option value="">Distrito 7</option>
-        <option value="">Distrito 14</option>
-        <option value="">Distrito 9</option>
-        <option value="">Distrito 15</option>
-        <option value="">Distrito 10</option>
-        <option value="">Distrito 11</option>
-        <option value="">Distrito 12</option>
-      </optgroup>
-      <optgroup label="Zonas">
-        <option value="">QUERU QUERU ALTO</option>
-        <option value="">ARANJUEZ ALTO</option>
-        <option value="">MESADILLA</option>
-        <option value="">MAYORAZGO</option>
-        <option value="">CALA CALA</option>
-        <option value="">CONDEBAMBA</option>
-        <option value="">TEMPORAL PAMPA</option>
-        <option value="">QUERU QUERU ALTO</option>
-        <option value="">SARCO</option>
-        <option value="">HIPODROMO</option>
-        <option value="">SARCOBAMBA</option>
-        <option value="">VILLA BUSCH</option>
-        <option value="">CHIQUICOLLO</option>
-        <option value="">HIPODROMO</option>
-        <option value="">LA CHIMBA</option>
-        <option value="">VILLA BUSCH</option>
-        <option value="">COÑA COÑA</option>
-        <option value="">SUDESTE</option>
-        <option value="">LA MAICA</option>
-        <option value="">JAIHUAYCO</option>
-        <option value="">ALALAY NORTE</option>
-        <option value="">LACMA</option>
-        <option value="">TICTI</option>
-        <option value="">VALLE HERMOSO</option>
-        <option value="">USPHA USPHA</option>
-        <option value="">ALALAY NORTE</option>
-        <option value="">ALALAY NORTE</option>
-        <option value="">ALALAY SUD</option>
-        <option value="">ALALAY SUD</option>
-        <option value="">VALLE HERMOSO</option>
-        <option value="">LA MAICA</option>
-        <option value="">COÑA COÑA</option>
-        <option value="">TAMBORADA PUKARITA</option>
-        <option value="">1° DE MAYO</option>
-        <option value="">PUKARA GRANDE NORTE</option>
-        <option value="">VALLE HERMOSO OESTE</option>
-        <option value="">PUKARA GRANDE SUR</option>
-        <option value="">PUKARA GRANDE OESTE</option>
-        <option value="">VALLE HERMOSO OESTE</option>
-        <option value="">KHARA KHARA ARRUMANI</option>
-        <option value="">PUKARA GRANDE SUR</option>
-        <option value="">NOROESTE</option>
-        <option value="">NORESTE</option>
-        <option value="">SUDOESTE</option>
-        <option value="">SUDESTE</option>
-        <option value="">MUYURINA</option>
-        <option value="">LAS CUADRAS</option>
-        <option value="">ALALAY NORTE</option>
-        <option value="">SARCO</option>
-        <option value="">CALA CALA</option>
-        <option value="">QUERU QUERU</option>
-        <option value="">TUPURAYA</option>
-        <option value="">HIPODROMO</option>
-      </optgroup>
-    </select>
-  )
+    <div className="mt-2">
+      <label>
+        <input type="checkbox" checked={isChecked} onChange={handleToggle} />
+        {node.label}
+      </label>
+      {node.children &&
+        node.children.map((child) => (
+          <div key={child.value} className="ml-4">
+            <TreeNode node={child} selected={selected} toggle={toggle} />
+          </div>
+        ))}
+    </div>
+  );
+}
+
+export default function DropdownList() {
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState(new Set());
+  const comboRef = useRef();
+
+  const toggle = (value, descendants) => {
+    const newSelected = new Set(selected);
+    const shouldSelect = !newSelected.has(value);
+    if (shouldSelect) {
+      newSelected.add(value);
+      descendants.forEach((d) => newSelected.add(d));
+    } else {
+      newSelected.delete(value);
+      descendants.forEach((d) => newSelected.delete(d));
+    }
+    setSelected(newSelected);
+  };
+
+  const handleClickOutside = (e) => {
+    if (comboRef.current && !comboRef.current.contains(e.target)) {
+      setOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className="relative w-80 text-left" ref={comboRef}>
+      <input
+        type="text"
+        readOnly
+        onClick={() => setOpen(!open)}
+        value={
+          selected.size === 0
+            ? "Seleccionar ubicación..."
+            : [...selected].join(", ")
+        }
+        className="p-2 border border-black rounded-lg w-full h-10 cursor-pointer"
+      />
+      {open && (
+        <div className="top-full z-10 absolute bg-white shadow-[0px_4px_10px_rgba(0, p-2 border border-black rounded-lg w-full max-h-80 overflow-y-auto 0, 0, 0.1)]">
+          <label>
+            <input
+              type="checkbox"
+              checked={selected.size > 0}
+              onChange={() => {
+                const all = [];
+                treeData.forEach((node) => {
+                  all.push(node.value, ...getAllDescendants(node));
+                });
+                const newSet = selected.size === 0 ? new Set(all) : new Set();
+                setSelected(newSet);
+              }}
+            />
+            TODO
+          </label>
+          {treeData.map((node) => (
+            <TreeNode
+              key={node.value}
+              node={node}
+              selected={selected}
+              toggle={toggle}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }

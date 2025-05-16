@@ -3,15 +3,15 @@ import { PieChart, Pie, Cell, Tooltip } from "recharts";
 
 const RADIAN = Math.PI / 180;
 const data = [
-  { name: "Consumo nulo", value: 50, color: "#fc3535" },
-  { name: "Consumo Promedio", value: 50, color: "#2d7ef7" },
-  { name: "Consumo excesivo", value: 50, color: "#fc3535" },
+  { name: "Consumo nulo", value: 300, color: "#fc3535" },
+  { name: "Consumo Promedio", value: 300, color: "#2d7ef7" },
+  { name: "Consumo excesivo", value: 300, color: "#fc3535" },
 ];
 const cx = 160; //centerX
 const cy = 120; //centerY
 const iR = 45; //innerRadious
 const oR = 100; //outerRadious
-const value = 85;
+const value = 560;
 
 const needle = (value, data, cx, cy, iR, oR, color) => {
   let total = 0;
@@ -69,7 +69,7 @@ export default function ConsumoPromedio() {
           textAnchor="middle"
           dominantBaseline="middle"
           style={{
-            fill: value < 50 ? "red" : value <= 100 ? "blue" : "red",
+            fill: value < data[0].value ? "red" : value <= data[0].value + data[1].value ? "blue" : "red",
             fontSize: "1.5rem",
           }}
         >
