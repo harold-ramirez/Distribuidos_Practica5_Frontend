@@ -5,6 +5,18 @@ import EnviarRecibo from "./enviarRecibo";
 import ConsumoMedidor from "./consumoMedidor";
 
 export default function DetallesMedidor({ medidor }) {
+  if (!medidor || medidor.length === 0) { //Por defecto
+    medidor = [
+      {
+        contrato: "---",
+        cliente: "---",
+        distrito: "---",
+        medidor: "---",
+        tipo: "---",
+      },
+    ];
+  }
+
   const [showEnviarRecibo, setShowEnviarRecibo] = useState(false);
   const handleEnviarRecibo = () => {
     setShowEnviarRecibo(!showEnviarRecibo);
@@ -18,16 +30,16 @@ export default function DetallesMedidor({ medidor }) {
     <>
       <h1 className="font-bold text-3xl">DETALLE</h1>
       <span className="flex flex-col flex-1 items-start p-1">
-        <strong>Cuenta: </strong>
-        <p className="w-full text-center">{medidor.cuenta}</p>
-        <strong>Propietario: </strong>
-        <p className="w-full text-center">{medidor.propietario}</p>
+        <strong>Contrato: </strong>
+        <p className="w-full text-center">{medidor[0].contrato}</p>
+        <strong>Cliente: </strong>
+        <p className="w-full text-center">{medidor[0].cliente}</p>
         <strong>Distrito: </strong>
-        <p className="w-full text-center">{medidor.distrito}</p>
+        <p className="w-full text-center">{medidor[0].distrito}</p>
         <strong>Medidor: </strong>
-        <p className="w-full text-center">{medidor.medidor}</p>
+        <p className="w-full text-center">{medidor[0].medidor}</p>
         <strong>Tipo: </strong>
-        <p className="w-full text-center">{medidor.tipo}</p>
+        <p className="w-full text-center">{medidor[0].tipo}</p>
       </span>
 
       <button

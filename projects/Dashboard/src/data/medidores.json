@@ -1,8 +1,8 @@
 [
   {
     "id": 1,
-    "cuenta": "123456789",
-    "propietario": "Juan Perez",
+    "contrato": "123456789",
+    "cliente": "Juan Perez",
     "distrito": 9,
     "medidor": "123",
     "tipo": "Sagemcom",
@@ -12,8 +12,8 @@
   },
   {
     "id": 2,
-    "cuenta": "987654321",
-    "propietario": "Rodrigo Rodriguez",
+    "contrato": "987654321",
+    "cliente": "Rodrigo Rodriguez",
     "distrito": 7,
     "medidor": "321",
     "tipo": "EDMI",
@@ -23,8 +23,8 @@
   },
   {
     "id": 3,
-    "cuenta": "246813579",
-    "propietario": "Rosa Rosales",
+    "contrato": "246813579",
+    "cliente": "Rosa Rosales",
     "distrito": 13,
     "medidor": "159",
     "tipo": "B Meters / Arcobel",

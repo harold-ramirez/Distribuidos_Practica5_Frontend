@@ -1,44 +1,6 @@
 import { useState, useRef, useEffect } from "react";
+import { treeData } from "../data/zonas"
 
-const treeData = [
-  {
-    label: "SubAlcaldía Tunari",
-    value: "tunari",
-    children: [
-      {
-        label: "Distrito 1",
-        value: "d1",
-        children: [
-          { label: "Zona QUERU QUERU ALTO", value: "z1" },
-          { label: "Zona ARANJUEZ ALTO", value: "z2" },
-          { label: "Zona MESADILLA", value: "z3" },
-        ],
-      },
-      {
-        label: "Distrito 2",
-        value: "d2",
-        children: [
-          { label: "Zona MAYORAZGO", value: "z4" },
-          { label: "Zona CALA CALA", value: "z5" },
-        ],
-      },
-    ],
-  },
-  {
-    label: "SubAlcaldía Molle",
-    value: "molle",
-    children: [
-      {
-        label: "Distrito 3",
-        value: "d3",
-        children: [
-          { label: "Zona SARCO", value: "z6" },
-          { label: "Zona HIPODROMO", value: "z7" },
-        ],
-      },
-    ],
-  },
-];
 
 function getAllDescendants(node) {
   if (!node.children) return [];
@@ -110,7 +72,7 @@ export default function DropdownList() {
         value={
           selected.size === 0
             ? "Seleccionar ubicación..."
-            : [...selected].join(", ")
+            : [...selected].join(" - ")
         }
         className="p-2 border border-black rounded-lg w-full h-10 cursor-pointer"
       />

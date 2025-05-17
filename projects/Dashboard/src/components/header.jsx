@@ -3,12 +3,13 @@ import Search from './search'
 import DropdownList from './dropdownList'
 import DatePicker from './datePicker'
 
-export default function Header(){
+export default function Header({ medidores, setResultados }){
+
   return (
-    <div className="bg-gray-300 w-full flex flex-row items-center p-2 text-black">
+    <div className="flex flex-row items-center bg-gray-300 p-2 w-full text-black">
       <img src={logo} alt="logo Semapa" width={250} />
-      <section className='flex flex-row items-center justify-end gap-3 flex-1 h-full p-2'>
-        <Search/>
+      <section className='flex flex-row flex-1 justify-end items-center gap-3 p-2 h-full'>
+        <Search medidores={ medidores } setResultados={setResultados} />
         <DropdownList/>
         <DatePicker/>
       </section>

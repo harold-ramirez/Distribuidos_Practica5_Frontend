@@ -21,19 +21,19 @@ export default function EnviarRecibo({ medidor, onClose }) {
           <IoDocumentTextOutline size={120} className="my-auto" />
           <span className="flex flex-col justify-center items-start p-2">
             <label>
-              <strong>Cuenta: </strong> {medidor.cuenta} <br />
+              <strong>Contrato: </strong> {medidor[0].contrato} <br />
             </label>
             <label>
-              <strong>Propietario: </strong> {medidor.propietario} <br />
+              <strong>Cliente: </strong> {medidor[0].cliente} <br />
             </label>
             <label>
-              <strong>Distrito: </strong> {medidor.distrito} <br />
+              <strong>Distrito: </strong> {medidor[0].distrito} <br />
             </label>
             <label>
-              <strong>Medidor: </strong> {medidor.medidor} <br />
+              <strong>Medidor: </strong> {medidor[0].medidor} <br />
             </label>
             <label>
-              <strong>Tipo: </strong> {medidor.tipo} <br />
+              <strong>Tipo: </strong> {medidor[0].tipo} <br />
             </label>
           </span>
           <span className="flex flex-col items-start p-2">

@@ -28,11 +28,11 @@ export default function Mapa() {
         .setPopup(
           new maptilersdk.Popup({ offset: 25 }).setHTML(
             "<span>" +
-              "<strong>Cuenta: </strong>" +
-              medidor.cuenta +
+              "<strong>Contrato: </strong>" +
+              medidor.contrato +
               "<br>" +
-              "<strong>Propietario: </strong>" +
-              medidor.propietario +
+              "<strong>Cliente: </strong>" +
+              medidor.cliente +
               "<br>" +
               "<strong>Distrito: </strong>" +
               medidor.distrito +
