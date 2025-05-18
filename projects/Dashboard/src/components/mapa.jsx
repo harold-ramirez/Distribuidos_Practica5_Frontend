@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from "react";
 import * as maptilersdk from "@maptiler/sdk";
 import "@maptiler/sdk/dist/maptiler-sdk.css";
 import dataList from "../data/medidores.json";
+import geodata from "../data/DistritosCercado.json";
 
 export default function Mapa() {
   const mapContainer = useRef(null);
@@ -22,30 +23,65 @@ export default function Mapa() {
       zoom: zoom,
     });
 
-    medidores.forEach((medidor) => {
-      new maptilersdk.Marker({ color: "#FF0000" })
-        .setLngLat([medidor.longitud, medidor.latitud]) //primero longitud y luego latitud
-        .setPopup(
-          new maptilersdk.Popup({ offset: 25 }).setHTML(
-            "<span>" +
-              "<strong>Contrato: </strong>" +
-              medidor.contrato +
-              "<br>" +
-              "<strong>Cliente: </strong>" +
-              medidor.cliente +
-              "<br>" +
-              "<strong>Distrito: </strong>" +
-              medidor.distrito +
-              "<br>" +
-              "<strong>Medidor: </strong>" +
-              medidor.medidor +
-              "<br>" +
-              "<strong>Tipo: </strong>" +
-              medidor.tipo +
-              "</span>"
+    map.current.on("load", async function () {
+      map.current.addSource("gps_tracks", {
+        type: "geojson",
+        data: geodata,
+      });
+
+      map.current.addLayer({
+        id: "DistritosCercado",
+        type: "line",
+        source: "gps_tracks",
+        layout: {},
+        paint: {
+          "line-color": "#57f",
+          "line-width": 3,
+        },
+      });
+
+      medidores.forEach((medidor) => {
+        new maptilersdk.Marker({ color: "#FF0000" })
+          .setLngLat([medidor.longitud, medidor.latitud]) //primero longitud y luego latitud
+          .setPopup(
+            new maptilersdk.Popup({ offset: 25 }).setHTML(
+              "<span>" +
+                "<strong>Contrato: </strong>" +
+                medidor.contrato +
+                "<br>" +
+                "<strong>Cliente: </strong>" +
+                medidor.cliente +
+                "<br>" +
+                "<strong>Distrito: </strong>" +
+                medidor.distrito +
+                "<br>" +
+                "<strong>Medidor: </strong>" +
+                medidor.medidor +
+                "<br>" +
+                "<strong>Tipo: </strong>" +
+                medidor.tipo +
+                "</span>"
+            )
           )
-        )
-        .addTo(map.current);
+          .addTo(map.current);
+      });
+
+      await maptilersdk.helpers.addHeatmap(map, {
+        data: 'schools.geojson',
+        property: "students",
+        radius: [
+          {propertyValue: 100, value: 15},
+          {propertyValue: 800, value: 50},
+        ],
+        weight: [
+          {propertyValue: 100, value: 0.1},
+          {propertyValue: 800, value: 1},
+        ],
+        colorRamp: maptilersdk.ColorRampCollection.MAGMA,
+        zoomCompensation: false,
+        opacity: 0.7,
+        intensity: 1.2,
+      });
     });
   }, [cercado.lng, cercado.lat, zoom, medidores]);
 
