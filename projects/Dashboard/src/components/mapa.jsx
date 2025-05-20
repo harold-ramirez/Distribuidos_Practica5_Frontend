@@ -3,6 +3,7 @@ import * as maptilersdk from "@maptiler/sdk";
 import "@maptiler/sdk/dist/maptiler-sdk.css";
 import dataList from "../data/medidores.json";
 import geodata from "../data/DistritosCercado.json";
+import heatMapJSON from "../data/mapaCalor.json";
 
 export default function Mapa() {
   const mapContainer = useRef(null);
@@ -12,34 +13,21 @@ export default function Mapa() {
   maptilersdk.config.apiKey = "kh9U32hnpTT8HLMSSp2r";
 
   const medidores = dataList;
+  const mapaCalor = heatMapJSON;
 
   useEffect(() => {
     if (map.current) return; // stops map from intializing more than once
 
+    //INICIALIZAR MAPA
     map.current = new maptilersdk.Map({
       container: mapContainer.current,
-      style: maptilersdk.MapStyle.STREETS,
+      style: maptilersdk.MapStyle.DATAVIZ.DARK,
       center: [cercado.lng, cercado.lat],
       zoom: zoom,
     });
 
     map.current.on("load", async function () {
-      map.current.addSource("gps_tracks", {
-        type: "geojson",
-        data: geodata,
-      });
-
-      map.current.addLayer({
-        id: "DistritosCercado",
-        type: "line",
-        source: "gps_tracks",
-        layout: {},
-        paint: {
-          "line-color": "#57f",
-          "line-width": 3,
-        },
-      });
-
+      //MARCADORES MEDIDORES
       medidores.forEach((medidor) => {
         new maptilersdk.Marker({ color: "#FF0000" })
           .setLngLat([medidor.longitud, medidor.latitud]) //primero longitud y luego latitud
@@ -66,16 +54,35 @@ export default function Mapa() {
           .addTo(map.current);
       });
 
-      await maptilersdk.helpers.addHeatmap(map, {
-        data: 'schools.geojson',
-        property: "students",
+      //LINEAS DISTRITOS CERCADO
+      map.current.addSource("gps_tracks", {
+        type: "geojson",
+        data: geodata,
+      });
+      map.current.addLayer({
+        id: "DistritosCercado",
+        type: "line",
+        source: "gps_tracks",
+        layout: {},
+        paint: {
+          "line-color": "#57f",
+          "line-width": 3,
+        },
+      });
+
+      //MAPA CALOR
+      maptilersdk.helpers.addHeatmap(map.current, {
+        data: mapaCalor,
+        property: "consumo",
         radius: [
-          {propertyValue: 100, value: 15},
-          {propertyValue: 800, value: 50},
+          { propertyValue: 0, value: 10 }, // Consumo bajo, radio pequeño
+          { propertyValue: 1500, value: 30 }, // Consumo medio, radio medio
+          { propertyValue: 3000, value: 60 }, // Consumo alto, radio grande
         ],
         weight: [
-          {propertyValue: 100, value: 0.1},
-          {propertyValue: 800, value: 1},
+          { propertyValue: 0, value: 0.5 }, // Consumo bajo, poco peso
+          { propertyValue: 1500, value: 1.5 }, // Consumo medio, peso medio
+          { propertyValue: 3000, value: 2.5 }, // Consumo alto, máximo peso
         ],
         colorRamp: maptilersdk.ColorRampCollection.MAGMA,
         zoomCompensation: false,
@@ -83,7 +90,7 @@ export default function Mapa() {
         intensity: 1.2,
       });
     });
-  }, [cercado.lng, cercado.lat, zoom, medidores]);
+  }, [cercado.lng, cercado.lat, zoom, mapaCalor, medidores]);
 
   return (
     <div className="relative w-full h-full map-wrap">

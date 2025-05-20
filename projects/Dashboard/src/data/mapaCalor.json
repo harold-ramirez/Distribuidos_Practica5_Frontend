@@ -1,0 +1,60 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "consumo": 908,
+        "name": "Medidor1"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-66.203838556437, -17.46549333378929]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "consumo": 1606,
+        "name": "Medidor2"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-66.10666747068865, -17.459651352176373]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "consumo": 3000,
+        "name": "Medidor3"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-66.15892755041885, -17.341603282098273]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "consumo": 1340,
+        "name": "Medidor4"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-66.26514465032993, -17.462137630979772]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "consumo": 2730,
+        "name": "Medidor5"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-66.18618042274367, -17.451329781523054]
+      }
+    }
+  ]
+}
