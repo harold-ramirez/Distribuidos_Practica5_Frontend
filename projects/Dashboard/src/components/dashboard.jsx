@@ -15,25 +15,27 @@ export default function Dashboard({ medidorInfo, medidores }) {
   const fetchCityConsumption = async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/fetchCityConsumption`);
-      setCityConsumption(response.data);
+      setCityConsumption(response.data.count ?? response.data);
+
     } catch (error) {
       console.error("Error fetching data:", error);
     }
   };
 
-  const fetchWorkingMeters = async () => {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/fetchWorkingMeters`);
-      setWorkingMeters(response.data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
+const fetchWorkingMeters = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/fetchWorkingMeters`);
+    setWorkingMeters(response.data.count ?? response.data);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+};
+
 
   const fetchFailingMeters = async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/fetchFailingMeters`);
-      setFailingMeters(response.data);
+      setFailingMeters(response.data.count ?? response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     }

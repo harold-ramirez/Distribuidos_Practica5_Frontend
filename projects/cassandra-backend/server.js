@@ -31,12 +31,12 @@ app.get("/api/fetchMedidoresHome", async (req, res) => {
   try {
     // 1. Traer todas las lecturas (cada una representa un medidor instalado)
     const lecturasQuery =
-      "SELECT idLectura, latitud, longitud, fk_idMedidor, fk_idUsuario FROM LecturaMedidor ALLOW FILTERING";
+      "SELECT idlectura, latitud, longitud, fk_idmedidor, fk_idusuario FROM LecturaMedidor ";
     const lecturasResult = await client.execute(lecturasQuery);
     const lecturas = lecturasResult.rows;
 
     // 2. Obtener todos los medidores base
-    const medidoresQuery = "SELECT idMedidor, tipoMedidor, modelo FROM Medidor";
+    const medidoresQuery = "SELECT idmedidor, tipoMedidor, modelo FROM Medidor";
     const medidoresResult = await client.execute(medidoresQuery);
     const medidoresMap = {};
     medidoresResult.rows.forEach((m) => {
@@ -45,7 +45,7 @@ app.get("/api/fetchMedidoresHome", async (req, res) => {
 
     // 3. Obtener todos los usuarios
     const usuariosQuery =
-      "SELECT idUsuario, nombre, telefono, correoElectronico FROM Usuario";
+      "SELECT idusuario, nombre, telefono, correoElectronico FROM Usuario";
     const usuariosResult = await client.execute(usuariosQuery);
     const usuariosMap = {};
     usuariosResult.rows.forEach((u) => {
@@ -54,7 +54,7 @@ app.get("/api/fetchMedidoresHome", async (req, res) => {
 
     // 4. Obtener todos los contratos (para el número de contrato)
     const contratosQuery =
-      "SELECT idContrato, numeroContrato, fk_idUsuario FROM Contrato";
+      "SELECT idcontrato, numeroContrato, fk_idusuario FROM Contrato";
     const contratosResult = await client.execute(contratosQuery);
     const contratosMap = {};
     contratosResult.rows.forEach((c) => {
@@ -85,21 +85,20 @@ app.get("/api/fetchMedidoresHome", async (req, res) => {
     res.status(500).json({ error: "Error al obtener datos" });
   }
 });
-
 // Implementado
 app.get("/api/fetchConsumoMeses", async (req, res) => {
   try {
     const query =
-      "SELECT fk_idMedidor, fecha, consumo FROM LecturaMedidor ALLOW FILTERING";
+      "SELECT fk_idmedidor, fecha, consumo FROM LecturaMedidor";
     const result = await client.execute(query);
 
     // Agrupa lecturas por medidor y por mes
     const consumosPorMedidorMes = {};
     result.rows.forEach((row) => {
-      const medidor = row.fk_idMedidor.toString();
+      // aquí corregimos fk_idMedidor → fk_idmedidor
+      const medidor = row.fk_idmedidor.toString();
       const fecha = new Date(row.fecha);
-      // Normaliza la fecha al mes (YYYY-MM)
-      const mes = fecha.toISOString().slice(0, 7);
+      const mes = fecha.toISOString().slice(0, 7); // YYYY-MM
 
       if (!consumosPorMedidorMes[mes]) consumosPorMedidorMes[mes] = {};
       if (!consumosPorMedidorMes[mes][medidor])
@@ -121,33 +120,20 @@ app.get("/api/fetchConsumoMeses", async (req, res) => {
       consumoPorMes[mes] = totalMes;
     });
 
-    // Traduce el número de mes a nombre (opcional, puedes ajustar a tu gusto)
+    // Traduce el número de mes a nombre
     const mesesNombres = [
-      "Enero",
-      "Febrero",
-      "Marzo",
-      "Abril",
-      "Mayo",
-      "Junio",
-      "Julio",
-      "Agosto",
-      "Septiembre",
-      "Octubre",
-      "Noviembre",
-      "Diciembre",
+      "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+      "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre",
     ];
 
-    // Prepara el arreglo de respuesta
+    // Prepara el arreglo de respuesta ordenado
     const data = Object.entries(consumoPorMes).map(([mes, consumo]) => {
-      const [anio, mesNum] = mes.split("-");
+      const [, mesNum] = mes.split("-");
       return {
         name: mesesNombres[parseInt(mesNum, 10) - 1],
-        consumo: Math.round(consumo * 100) / 100, // Redondea a 2 decimales
+        consumo: Math.round(consumo * 100) / 100,
       };
-    });
-
-    // Ordena por mes (opcional)
-    data.sort(
+    }).sort(
       (a, b) => mesesNombres.indexOf(a.name) - mesesNombres.indexOf(b.name)
     );
 
@@ -161,18 +147,15 @@ app.get("/api/fetchConsumoMeses", async (req, res) => {
 // Implementado
 app.get("/api/fetchConsumoPromedio", async (req, res) => {
   try {
-    // Trae solo los campos necesarios para eficiencia
     const query =
-      "SELECT fk_idMedidor, fecha, consumo FROM LecturaMedidor ALLOW FILTERING";
+      "SELECT fk_idmedidor, fecha, consumo FROM LecturaMedidor";
     const result = await client.execute(query);
 
     // Agrupa lecturas por medidor y por día
     const consumosPorMedidorDia = {};
     result.rows.forEach((row) => {
-      const medidor = row.fk_idMedidor.toString();
-      const fecha = new Date(row.fecha);
-      // Normaliza la fecha al día (YYYY-MM-DD)
-      const dia = fecha.toISOString().slice(0, 10);
+      const medidor = row.fk_idmedidor.toString();
+      const dia = new Date(row.fecha).toISOString().slice(0, 10); // YYYY-MM-DD
 
       if (!consumosPorMedidorDia[medidor]) consumosPorMedidorDia[medidor] = {};
       if (!consumosPorMedidorDia[medidor][dia])
@@ -180,50 +163,47 @@ app.get("/api/fetchConsumoPromedio", async (req, res) => {
       consumosPorMedidorDia[medidor][dia].push(row.consumo);
     });
 
-    // Calcula el consumo diario por medidor (max - min por día)
-    let consumosDiarios = [];
+    // Recolecta todas las diferencias diarias
+    const diffs = [];
     Object.values(consumosPorMedidorDia).forEach((dias) => {
-      Object.values(dias).forEach((consumos) => {
-        if (consumos.length > 1) {
-          const max = Math.max(...consumos);
-          const min = Math.min(...consumos);
-          consumosDiarios.push(max - min);
+      Object.values(dias).forEach((vals) => {
+        if (vals.length > 1) {
+          diffs.push(Math.max(...vals) - Math.min(...vals));
         }
       });
     });
 
-    // Promedio de todos los consumos diarios
+    // Calcula promedio y devuelve un Number
     const promedio =
-      consumosDiarios.length > 0
-        ? consumosDiarios.reduce((a, b) => a + b, 0) / consumosDiarios.length
+      diffs.length > 0
+        ? diffs.reduce((a, b) => a + b, 0) / diffs.length
         : 0;
 
-    res.json({ promedio });
+    res.json(Number(promedio.toFixed(2)));
   } catch (err) {
     console.error("Error al calcular consumo promedio diario:", err);
     res.status(500).json({ error: "Error al obtener datos" });
   }
 });
 
-// Implementado
+
 app.get("/api/fetchConsumoZonas", async (req, res) => {
   try {
     // 1. Trae todas las lecturas con fk_idDistrito y consumo
     const lecturasQuery =
-      "SELECT fk_idDistrito, consumo FROM LecturaMedidor ALLOW FILTERING";
+      "SELECT fk_iddistrito, consumo FROM LecturaMedidor";
     const lecturasResult = await client.execute(lecturasQuery);
 
     // 2. Trae todos los subdistritos para mapear fk_idDistrito -> idSubDistrito
     const subdistritosQuery =
-      "SELECT idSubDistrito, fk_idDistrito FROM SubDistrito";
+      "SELECT idsubdistrito, fk_iddistrito FROM SubDistrito";
     const subdistritosResult = await client.execute(subdistritosQuery);
 
-    // 3. Trae todas las zonas y su fk_idSubDistrito
-    const zonasQuery = "SELECT idZona, nombreZona, fk_idSubDistrito FROM Zona";
+    // 3. Trae todas las zonas y su fk_idsubdistrito
+    const zonasQuery = "SELECT idZona, nombreZona, fk_idsubdistrito FROM Zona";
     const zonasResult = await client.execute(zonasQuery);
 
     // 4. Construye los mapas para los joins manuales
-    // Mapea distrito -> [subdistritos]
     const distritoToSubdistritos = {};
     subdistritosResult.rows.forEach((sd) => {
       const distritoId = sd.fk_iddistrito.toString();
@@ -232,7 +212,6 @@ app.get("/api/fetchConsumoZonas", async (req, res) => {
       distritoToSubdistritos[distritoId].push(sd.idsubdistrito.toString());
     });
 
-    // Mapea subdistrito -> [zonas]
     const subdistritoToZonas = {};
     zonasResult.rows.forEach((z) => {
       const subdistritoId = z.fk_idsubdistrito.toString();
@@ -255,11 +234,13 @@ app.get("/api/fetchConsumoZonas", async (req, res) => {
       });
     });
 
-    // 6. Prepara el arreglo de respuesta
-    const data = Object.entries(consumoPorZona).map(([name, consumo]) => ({
-      name,
-      consumo: Math.round(consumo * 100) / 100, // Redondea a 2 decimales
-    }));
+    // 6. Prepara y ordena el arreglo de respuesta de mayor a menor
+    const data = Object.entries(consumoPorZona)
+      .map(([name, consumo]) => ({
+        name,
+        consumo: Math.round(consumo * 100) / 100,
+      }))
+      .sort((a, b) => b.consumo - a.consumo); // Orden descendente
 
     res.json(data);
   } catch (err) {
@@ -268,31 +249,38 @@ app.get("/api/fetchConsumoZonas", async (req, res) => {
   }
 });
 
-// Implementado
+// fetchCityConsumption corregido
 app.get("/api/fetchCityConsumption", async (req, res) => {
   try {
     const query =
-      "SELECT SUM(consumo) as total_consumo FROM LecturaMedidor ALLOW FILTERING";
-    const result = await client.execute(query);
-    // Cassandra devuelve sum como objeto tipo Double o similar
-    const total = result.rows[0]["total_consumo"];
-    res.json({ total });
+      "SELECT SUM(consumo) AS total_consumo FROM LecturaMedidor";
+    const result = await client.execute(
+      query,
+      [],
+      { consistency: cassandra.types.consistencies.localOne }  // <-- fuerza LOCAL_ONE
+    );
+
+    const raw = result.rows[0]?.total_consumo;
+    const total = raw && raw.toNumber ? raw.toNumber() : Number(raw);
+    res.json(Number(total.toFixed(2)));
   } catch (err) {
     console.error("Error al obtener consumo total de la ciudad:", err);
     res.status(500).json({ error: "Error al obtener datos" });
   }
 });
 
-// Implementado
 app.get("/api/fetchWorkingMeters", async (req, res) => {
   try {
-    const query =
-      "SELECT COUNT(idLectura) FROM LecturaMedidor WHERE estado = 1 ALLOW FILTERING";
+    // Consulta para traer idLectura que cumplan estado y fecha
+    const query = `
+SELECT idLectura FROM LecturaMedidor WHERE estado = 1 AND fecha >= '2025-04-01T00:00:00+0000' AND fecha <= '2025-04-22T23:59:59+0000'  LIMIT 10000 ALLOW FILTERING;
+    `;
+
     const result = await client.execute(query);
-    // Cassandra devuelve count como objeto tipo Long, así que lo convertimos a número
-    const count = result.rows[0]["count"].toNumber
-      ? result.rows[0]["count"].toNumber()
-      : result.rows[0]["count"];
+
+    // Contar filas que llegaron
+    const count = result.rows.length;
+
     res.json({ count });
   } catch (err) {
     console.error("Error al obtener medidores funcionando:", err);
@@ -300,28 +288,39 @@ app.get("/api/fetchWorkingMeters", async (req, res) => {
   }
 });
 
-// Implementado
-app.get("/api/fetchFailingMeters", async (req, res) => {
+router.get('/fetchFailingMeters', async (req, res) => {
   try {
-    const query =
-      "SELECT COUNT(idLectura) FROM LecturaMedidor WHERE estado = 0 ALLOW FILTERING";
-    const result = await client.execute(query);
-    const count = result.rows[0]["count"].toNumber
-      ? result.rows[0]["count"].toNumber()
-      : result.rows[0]["count"];
-    res.json({ count });
-  } catch (err) {
-    console.error("Error al obtener medidores fallando:", err);
-    res.status(500).json({ error: "Error al obtener datos" });
+    // Consulta 1: estado = 0
+    const resultEstado = await cassandra.execute(`
+      SELECT COUNT(*) AS total FROM LecturaMedidor 
+      WHERE estado = 0 ALLOW FILTERING;
+    `);
+    const totalEstado = resultEstado.rows[0]?.total?.toInt?.() ?? 0;
+
+    // Consulta 2: error IS NOT NULL
+    const resultError = await cassandra.execute(`
+      SELECT COUNT(*) AS total FROM LecturaMedidor 
+      WHERE error IS NOT NULL ALLOW FILTERING;
+    `);
+    const totalError = resultError.rows[0]?.total?.toInt?.() ?? 0;
+
+    // ⚠️ Evita duplicados si hay coincidencias en ambos criterios
+    const total = totalEstado + totalError; // opcionalmente, podrías deduplicar si guardas los IDs
+    res.json({ count: total });
+
+  } catch (error) {
+    console.error("Error al obtener medidores con error:", error);
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 });
+
 
 // Implementado
 app.get("/api/fetchMapaCalor", async (req, res) => {
   try {
     // Trae consumo, latitud y longitud de cada medidor instalado
     const query =
-      "SELECT consumo, latitud, longitud FROM LecturaMedidor ALLOW FILTERING";
+      "SELECT consumo, latitud, longitud FROM LecturaMedidor";
     const result = await client.execute(query);
 
     // Construye el GeoJSON
@@ -348,19 +347,46 @@ app.get("/api/fetchMapaCalor", async (req, res) => {
     res.status(500).json({ error: "Error al obtener datos" });
   }
 });
-
-// MOVIL (NO IMPLEMENTADO)------------------------------------------------------------------------------------------------
 app.post("/api/registrarConsumo", async (req, res) => {
-  const { id, nombre, valor } = req.body; // Ejemplo de datos a insertar
+  const {
+    idlectura,
+    fk_idmedidor,
+    fk_idusuario,
+    consumo,
+    fecha,
+    latitud,
+    longitud,
+    estado,
+    fk_iddistrito,
+  } = req.body;
+
   try {
-    const query =
-      "INSERT INTO tu_tabla_de_datos (id, nombre, valor) VALUES (?, ?, ?)";
-    const params = [id, nombre, valor];
-    await client.execute(query, params, { prepare: true }); // Usar prepared statements es buena práctica
-    res.status(201).json({ message: "Datos insertados correctamente" });
+    const query = `
+      INSERT INTO LecturaMedidor (
+        idlectura, fk_idmedidor, fk_idusuario,
+        consumo, fecha, latitud, longitud,
+        estado, fk_iddistrito
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const params = [
+      idlectura,
+      fk_idmedidor,
+      fk_idusuario,
+      consumo,
+      fecha,
+      latitud,
+      longitud,
+      estado,
+      fk_iddistrito,
+    ];
+
+    await client.execute(query, params, { prepare: true });
+
+    res.status(201).json({ message: "Lectura registrada correctamente" });
   } catch (err) {
-    console.error("Error al insertar datos en Cassandra:", err);
-    res.status(500).json({ error: "Error al insertar datos" });
+    console.error("❌ Error al insertar lectura:", err);
+    res.status(500).json({ error: "Error al insertar lectura" });
   }
 });
 
