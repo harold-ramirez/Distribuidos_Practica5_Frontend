@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+/* Estilos para impresión */
+@media print {
+  @page {
+    size: 139.7mm 215.9mm;
+    margin: 0;
+  }
+}
+
+/* Clases específicas para facturas */
+.factura-media-carta {
+  width: 139.7mm;
+  height: 215.9mm;
+}
+
+.factura-rollo {
+  width: 80mm;
+  min-height: 100mm;
+}

@@ -49,7 +49,7 @@ export default function EnviarRecibo({ medidor, onClose }) {
         <h2>--------------- Enviar Recibo Via: ----------------</h2>
         <span className="flex flex-row justify-evenly mt-2">
           <button
-            onClick={onClose}
+            onClick={() => window.open("/recibo", "_blank")}
             className="flex flex-row justify-center items-center gap-2 bg-gray-200 hover:bg-purple-700 shadow-[4px_4px_10px_rgba(0,0,0,0.3)] p-2 border-2 border-purple-700 rounded-md w-2/7 h-10 font-bold text-purple-700 hover:text-white transition-all cursor-pointer"
           >
             <MdOutlineMail size={25} /> E-mail
