@@ -72,7 +72,7 @@ export default function DropdownList() {
         value={
           selected.size === 0
             ? "Seleccionar ubicación..."
-            : [...selected].join(" - ")
+            : [...selected].join("-")
         }
         className="p-2 border border-black rounded-lg w-full h-10 cursor-pointer"
       />

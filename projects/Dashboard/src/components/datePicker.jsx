@@ -1,9 +1,4 @@
-import { useState } from "react";
-
-export default function DatePicker() {
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-
+export default function DatePicker({ startDate, endDate, setStartDate, setEndDate }) {
   return (
     <div className="flex flex-row gap-4">
       <div>

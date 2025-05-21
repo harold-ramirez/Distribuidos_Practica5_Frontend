@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { IoSearch } from "react-icons/io5";
 
-export default function Search({ medidores, setResultados }) {
+export default function Search({ medidores, setMedidorInfo }) {
   const [text, setText] = useState("");
 
   const handleSearch = () => {
@@ -13,9 +13,9 @@ export default function Search({ medidores, setResultados }) {
           m.cliente.toLowerCase() === text.toLowerCase()
       );
       if (resultado) {
-        setResultados([resultado]);
+        setMedidorInfo([resultado]);
       } else {
-        setResultados([]);
+        setMedidorInfo([]);
         alert("No se encontró ningún medidor con ese criterio.");
       }
       setText("");

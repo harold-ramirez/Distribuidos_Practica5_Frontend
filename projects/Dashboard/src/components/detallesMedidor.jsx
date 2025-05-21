@@ -4,19 +4,7 @@ import { BsBarChartLine } from "react-icons/bs";
 import EnviarRecibo from "./enviarRecibo";
 import ConsumoMedidor from "./consumoMedidor";
 
-export default function DetallesMedidor({ medidor }) {
-  if (!medidor || medidor.length === 0) { //Por defecto
-    medidor = [
-      {
-        contrato: "---",
-        cliente: "---",
-        distrito: "---",
-        medidor: "---",
-        tipo: "---",
-      },
-    ];
-  }
-
+export default function DetallesMedidor({ medidorInfo }) {
   const [showEnviarRecibo, setShowEnviarRecibo] = useState(false);
   const handleEnviarRecibo = () => {
     setShowEnviarRecibo(!showEnviarRecibo);
@@ -31,15 +19,15 @@ export default function DetallesMedidor({ medidor }) {
       <h1 className="font-bold text-3xl">DETALLE</h1>
       <span className="flex flex-col flex-1 items-start p-1">
         <strong>Contrato: </strong>
-        <p className="w-full text-center">{medidor[0].contrato}</p>
+        <p className="w-full text-center">{medidorInfo[0].contrato}</p>
         <strong>Cliente: </strong>
-        <p className="w-full text-center">{medidor[0].cliente}</p>
+        <p className="w-full text-center">{medidorInfo[0].cliente}</p>
         <strong>Distrito: </strong>
-        <p className="w-full text-center">{medidor[0].distrito}</p>
+        <p className="w-full text-center">{medidorInfo[0].distrito}</p>
         <strong>Medidor: </strong>
-        <p className="w-full text-center">{medidor[0].medidor}</p>
+        <p className="w-full text-center">{medidorInfo[0].medidor}</p>
         <strong>Tipo: </strong>
-        <p className="w-full text-center">{medidor[0].tipo}</p>
+        <p className="w-full text-center">{medidorInfo[0].tipo}</p>
       </span>
 
       <button
@@ -49,7 +37,7 @@ export default function DetallesMedidor({ medidor }) {
         <BsBarChartLine size={28} /> Ver Consumo
       </button>
       {showConsumoMedidor && (
-        <ConsumoMedidor medidor={medidor} onClose={handleConsumoMedidor} />
+        <ConsumoMedidor medidor={medidorInfo} onClose={handleConsumoMedidor} />
       )}
 
       <button
@@ -59,7 +47,7 @@ export default function DetallesMedidor({ medidor }) {
         <LuSendHorizontal size={28} /> Enviar Recibo
       </button>
       {showEnviarRecibo && (
-        <EnviarRecibo medidor={medidor} onClose={handleEnviarRecibo} />
+        <EnviarRecibo medidor={medidorInfo} onClose={handleEnviarRecibo} />
       )}
     </>
   );

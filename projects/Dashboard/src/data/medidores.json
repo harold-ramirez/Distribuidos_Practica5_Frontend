@@ -7,8 +7,8 @@
     "medidor": "123",
     "tipo": "Sagemcom",
     "consumo": [100, 200, 300, 400, 500],
-    "latitud": -17.417482946453116,
-    "longitud": -66.1298692752899
+    "latitud": -17.46549333378929,
+    "longitud": -66.203838556437
   },
   {
     "id": 2,
@@ -18,8 +18,8 @@
     "medidor": "321",
     "tipo": "EDMI",
     "consumo": [50, 75, 100, 125, 150],
-    "latitud": -17.412347411943475,
-    "longitud": -66.1792559136494
+    "latitud": -17.459651352176373,
+    "longitud": -66.10666747068865
   },
   {
     "id": 3,
@@ -29,7 +29,29 @@
     "medidor": "159",
     "tipo": "B Meters / Arcobel",
     "consumo": [100, 150, 200, 250, 300],
-    "latitud": -17.347412832804224,
-    "longitud": -66.17496471278419
+    "latitud": -17.341603282098273,
+    "longitud": -66.15892755041885
+  },
+  {
+    "id": 4,
+    "contrato": "246813579",
+    "cliente": "Rosa Rosales",
+    "distrito": 13,
+    "medidor": "159",
+    "tipo": "B Meters / Arcobel",
+    "consumo": [100, 150, 200, 250, 300],
+    "latitud": -17.462137630979772,
+    "longitud": -66.26514465032993
+  },
+  {
+    "id": 5,
+    "contrato": "246813579",
+    "cliente": "Rosa Rosales",
+    "distrito": 13,
+    "medidor": "159",
+    "tipo": "B Meters / Arcobel",
+    "consumo": [100, 150, 200, 250, 300],
+    "latitud": -17.451329781523054,
+    "longitud": -66.18618042274367
   }
 ]

@@ -1,5 +1,8 @@
 import { ResponsiveContainer } from "recharts";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
+import axios from "axios";
+import { API_BASE_URL } from "../../constants.js";
+import { useState, useEffect } from "react";
 
 const RADIAN = Math.PI / 180;
 const data = [
@@ -43,6 +46,27 @@ const needle = (value, data, cx, cy, iR, oR, color) => {
 };
 
 export default function ConsumoPromedio() {
+  // const [value, setValue] = useState(0);
+
+  const fetchValue = async () => {
+    //     try {
+    //       const response = await axios.get(`${API_BASE_URL}/vuelos/vuelos/filtrados`, {
+    //         params: {
+    //           origen: airportOrigin,
+    //           destino: airportDestination,
+    //           fecha: date,
+    //         },
+    //       });
+    //       setValue(response.data);
+    //     } catch (error) {
+    //       console.error("Error fetching data:", error);
+    //     }
+  };
+
+  useEffect(() => {
+    fetchValue();
+  }, []);
+
   return (
     <ResponsiveContainer width="100%" height="100%" aspect={2}>
       <PieChart>

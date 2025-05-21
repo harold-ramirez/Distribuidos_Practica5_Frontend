@@ -6,107 +6,11 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import data from "../data/consumoMedidorHoras.json";
+
 //CONSUMO POR HORA
 export default function ConsumoMedidor({ consumo, onClose }) {
-  // const data = [
-  //   {
-  //     name: "01:00",
-  //     consumo: 3000,
-  //   },
-  //   {
-  //     name: "02:00",
-  //     consumo: 2000,
-  //   },
-  //   {
-  //     name: "03:00",
-  //     consumo: 2780,
-  //   },
-  //   {
-  //     name: "04:00",
-  //     consumo: 1890,
-  //   },
-  //   {
-  //     name: "05:00",
-  //     consumo: 2390,
-  //   },
-  //   {
-  //     name: "06:00",
-  //     consumo: 4000,
-  //   },
-  //   {
-  //     name: "07:00",
-  //     consumo: 3000,
-  //   },
-  //   {
-  //     name: "08:00",
-  //     consumo: 2000,
-  //   },
-  //   {
-  //     name: "09:00",
-  //     consumo: 2780,
-  //   },
-  //   {
-  //     name: "10:00",
-  //     consumo: 1890,
-  //   },
-  //   {
-  //     name: "11:00",
-  //     consumo: 2390,
-  //   },
-  //   {
-  //     name: "12:00",
-  //     consumo: 4000,
-  //   },
-  //   {
-  //     name: "13:00",
-  //     consumo: 3000,
-  //   },
-  //   {
-  //     name: "14:00",
-  //     consumo: 2000,
-  //   },
-  //   {
-  //     name: "15:00",
-  //     consumo: 2780,
-  //   },
-  //   {
-  //     name: "16:00",
-  //     consumo: 1890,
-  //   },
-  //   {
-  //     name: "17:00",
-  //     consumo: 2390,
-  //   },
-  //   {
-  //     name: "18:00",
-  //     consumo: 4000,
-  //   },
-  //   {
-  //     name: "19:00",
-  //     consumo: 3000,
-  //   },
-  //   {
-  //     name: "20:00",
-  //     consumo: 2000,
-  //   },
-  //   {
-  //     name: "21:00",
-  //     consumo: 2780,
-  //   },
-  //   {
-  //     name: "22:00",
-  //     consumo: 1890,
-  //   },
-  //   {
-  //     name: "23:00",
-  //     consumo: 2390,
-  //   },
-  //   {
-  //     name: "00:00",
-  //     consumo: 4000,
-  //   },
-  // ];
-
+  consumo = data;
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
@@ -116,7 +20,6 @@ export default function ConsumoMedidor({ consumo, onClose }) {
         </div>
       );
     }
-
     return null;
   };
 

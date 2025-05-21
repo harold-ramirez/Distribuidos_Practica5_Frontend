@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import * as maptilersdk from "@maptiler/sdk";
 import "@maptiler/sdk/dist/maptiler-sdk.css";
 import dataList from "../data/medidores.json";
@@ -14,6 +14,43 @@ export default function Mapa() {
 
   const medidores = dataList;
   const mapaCalor = heatMapJSON;
+
+  // const [medidores, setMedidores] = useState([]);
+  // const [mapaCalor, setMapaCalor] = useState();
+
+  const fetchMedidores = async () => {
+    //     try {
+    //       const response = await axios.get(`${API_BASE_URL}/vuelos/vuelos/filtrados`, {
+    //         params: {
+    //           origen: airportOrigin,
+    //           destino: airportDestination,
+    //           fecha: date,
+    //         },
+    //       });
+    //       setMedidores(response.data);
+    //     } catch (error) {
+    //       console.error("Error fetching data:", error);
+    //     }
+  };
+  const fetchMapaCalor = async () => {
+    //     try {
+    //       const response = await axios.get(`${API_BASE_URL}/vuelos/vuelos/filtrados`, {
+    //         params: {
+    //           origen: airportOrigin,
+    //           destino: airportDestination,
+    //           fecha: date,
+    //         },
+    //       });
+    //       setMapaCalor(response.data);
+    //     } catch (error) {
+    //       console.error("Error fetching data:", error);
+    //     }
+  };
+
+  useEffect(() => {
+    fetchMedidores();
+    fetchMapaCalor();
+  }, []);
 
   useEffect(() => {
     if (map.current) return; // stops map from intializing more than once

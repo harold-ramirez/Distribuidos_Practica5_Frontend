@@ -1,31 +1,73 @@
+import { useState, useEffect } from "react";
 import ConsumoMeses from "./consumoMeses";
 import ConsumoPromedio from "./consumoPromedio";
 import ConsumoZonas from "./consumoZonas";
 import Mapa from "./mapa";
 import DetallesMedidor from "./detallesMedidor";
+import axios from "axios";
+import { API_BASE_URL } from "../../constants.js";
 
-export default function Dashboard({resultados}) {
-  // const currentMedidor = {
-  //   id: 1,
-  //   cuenta: "123456789",
-  //   propietario: "Juan Perez",
-  //   distrito: 9,
-  //   medidor: "123",
-  //   tipo: "Sagemcom",
-  //   consumo: [100, 200, 300, 400, 500],
-  //   latitud: -17.417482946453116,
-  //   longitud: -66.1298692752899,
-  // };
+export default function Dashboard({ medidorInfo }) {
+  const [cityConsumption, setCityConsumption] = useState(25254325);
+  const [workingMeters, setWorkingMeters] = useState(109309);
+  const [failingMeters, setFailingMeters] = useState(9122);
 
-  const cityConsumption = 25254325;
-  const workingMeters = 109309;
-  const failingMeters = 9122;
+  const fetchCityConsumption = async () => {
+    //     try {
+    //       const response = await axios.get(`${API_BASE_URL}/vuelos/vuelos/filtrados`, {
+    //         params: {
+    //           origen: airportOrigin,
+    //           destino: airportDestination,
+    //           fecha: date,
+    //         },
+    //       });
+    //       setCityConsumption(response.data);
+    //     } catch (error) {
+    //       console.error("Error fetching data:", error);
+    //     }
+  };
+
+  const fetchWorkingMeters = async () => {
+    //     try {
+    //       const response = await axios.get(`${API_BASE_URL}/vuelos/vuelos/filtrados`, {
+    //         params: {
+    //           origen: airportOrigin,
+    //           destino: airportDestination,
+    //           fecha: date,
+    //         },
+    //       });
+    //       setWorkingMeters(response.data);
+    //     } catch (error) {
+    //       console.error("Error fetching data:", error);
+    //     }
+  };
+
+  const fetchFailingMeters = async () => {
+    //     try {
+    //       const response = await axios.get(`${API_BASE_URL}/vuelos/vuelos/filtrados`, {
+    //         params: {
+    //           origen: airportOrigin,
+    //           destino: airportDestination,
+    //           fecha: date,
+    //         },
+    //       });
+    //       setFailingMeters(response.data);
+    //     } catch (error) {
+    //       console.error("Error fetching data:", error);
+    //     }
+  };
+
+  useEffect(() => {
+    fetchCityConsumption();
+    fetchWorkingMeters();
+    fetchFailingMeters();
+  }, []);
 
   return (
     <span className="p-1 w-full h-full overflow-hidden text-black">
       <div className="gap-2 grid grid-cols-9 grid-rows-6 rounded-xl w-full h-full">
         <div className="flex flex-col row-span-6 bg-gray-300 p-1 rounded-xl">
-          <DetallesMedidor medidor={resultados} />
+          <DetallesMedidor medidorInfo={medidorInfo} />
         </div>
         <div className="col-span-4 row-span-6 bg-gray-300 p-1 rounded-xl wrap-anywhere">
           <Mapa />

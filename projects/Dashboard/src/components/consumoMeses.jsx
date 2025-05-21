@@ -1,4 +1,7 @@
 import { BarChart, Bar, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import axios from "axios";
+import { API_BASE_URL } from "../../constants.js";
+import { useState, useEffect } from "react";
 
 const data = [
   {
@@ -41,6 +44,27 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export default function ConsumoMeses() {
+  // const [data, setData] = useState([]);
+
+  const fetchData = async () => {
+    //     try {
+    //       const response = await axios.get(`${API_BASE_URL}/vuelos/vuelos/filtrados`, {
+    //         params: {
+    //           origen: airportOrigin,
+    //           destino: airportDestination,
+    //           fecha: date,
+    //         },
+    //       });
+    //       setData(response.data);
+    //     } catch (error) {
+    //       console.error("Error fetching data:", error);
+    //     }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+  
   return (
     <ResponsiveContainer width="100%" height="100%">
       <BarChart data={data}>
