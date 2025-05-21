@@ -52,6 +52,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 export default function ConsumoMeses() {
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
     try {
@@ -59,12 +60,18 @@ export default function ConsumoMeses() {
       setData(response.data);
     } catch (error) {
       console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  if (loading) {
+    return <div>Cargando datos...</div>;
+  }
 
   return (
     <ResponsiveContainer width="100%" height="100%">
