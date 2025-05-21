@@ -1,54 +1,34 @@
 import React, { useRef, useState, useEffect } from "react";
 import * as maptilersdk from "@maptiler/sdk";
 import "@maptiler/sdk/dist/maptiler-sdk.css";
-import dataList from "../data/medidores.json";
+// import dataList from "../data/medidores.json";
 import geodata from "../data/DistritosCercado.json";
-import heatMapJSON from "../data/mapaCalor.json";
+// import heatMapJSON from "../data/mapaCalor.json";
+import axios from "axios";
+import { API_BASE_URL } from "../../constants.js";
 
-export default function Mapa() {
+export default function Mapa({ medidores }) {
   const mapContainer = useRef(null);
   const map = useRef(null);
   const cercado = { lng: -66.16259202670707, lat: -17.400348064136548 }; //primero longitud y luego latitud
   const zoom = 10.7;
   maptilersdk.config.apiKey = "kh9U32hnpTT8HLMSSp2r";
 
-  const medidores = dataList;
-  const mapaCalor = heatMapJSON;
+  // const medidores = dataList;
+  // const mapaCalor = heatMapJSON;
 
-  // const [medidores, setMedidores] = useState([]);
-  // const [mapaCalor, setMapaCalor] = useState();
+  const [mapaCalor, setMapaCalor] = useState();
 
-  const fetchMedidores = async () => {
-    //     try {
-    //       const response = await axios.get(`${API_BASE_URL}/vuelos/vuelos/filtrados`, {
-    //         params: {
-    //           origen: airportOrigin,
-    //           destino: airportDestination,
-    //           fecha: date,
-    //         },
-    //       });
-    //       setMedidores(response.data);
-    //     } catch (error) {
-    //       console.error("Error fetching data:", error);
-    //     }
-  };
   const fetchMapaCalor = async () => {
-    //     try {
-    //       const response = await axios.get(`${API_BASE_URL}/vuelos/vuelos/filtrados`, {
-    //         params: {
-    //           origen: airportOrigin,
-    //           destino: airportDestination,
-    //           fecha: date,
-    //         },
-    //       });
-    //       setMapaCalor(response.data);
-    //     } catch (error) {
-    //       console.error("Error fetching data:", error);
-    //     }
+    try {
+      const response = await axios.get(`${API_BASE_URL}/fetchMapaCalor`);
+      setMapaCalor(response.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
   };
 
   useEffect(() => {
-    fetchMedidores();
     fetchMapaCalor();
   }, []);
 

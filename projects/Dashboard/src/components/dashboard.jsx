@@ -7,54 +7,36 @@ import DetallesMedidor from "./detallesMedidor";
 import axios from "axios";
 import { API_BASE_URL } from "../../constants.js";
 
-export default function Dashboard({ medidorInfo }) {
+export default function Dashboard({ medidorInfo, medidores }) {
   const [cityConsumption, setCityConsumption] = useState(25254325);
   const [workingMeters, setWorkingMeters] = useState(109309);
   const [failingMeters, setFailingMeters] = useState(9122);
 
   const fetchCityConsumption = async () => {
-    //     try {
-    //       const response = await axios.get(`${API_BASE_URL}/vuelos/vuelos/filtrados`, {
-    //         params: {
-    //           origen: airportOrigin,
-    //           destino: airportDestination,
-    //           fecha: date,
-    //         },
-    //       });
-    //       setCityConsumption(response.data);
-    //     } catch (error) {
-    //       console.error("Error fetching data:", error);
-    //     }
+    try {
+      const response = await axios.get(`${API_BASE_URL}/fetchCityConsumption`);
+      setCityConsumption(response.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
   };
 
   const fetchWorkingMeters = async () => {
-    //     try {
-    //       const response = await axios.get(`${API_BASE_URL}/vuelos/vuelos/filtrados`, {
-    //         params: {
-    //           origen: airportOrigin,
-    //           destino: airportDestination,
-    //           fecha: date,
-    //         },
-    //       });
-    //       setWorkingMeters(response.data);
-    //     } catch (error) {
-    //       console.error("Error fetching data:", error);
-    //     }
+    try {
+      const response = await axios.get(`${API_BASE_URL}/fetchWorkingMeters`);
+      setWorkingMeters(response.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
   };
 
   const fetchFailingMeters = async () => {
-    //     try {
-    //       const response = await axios.get(`${API_BASE_URL}/vuelos/vuelos/filtrados`, {
-    //         params: {
-    //           origen: airportOrigin,
-    //           destino: airportDestination,
-    //           fecha: date,
-    //         },
-    //       });
-    //       setFailingMeters(response.data);
-    //     } catch (error) {
-    //       console.error("Error fetching data:", error);
-    //     }
+    try {
+      const response = await axios.get(`${API_BASE_URL}/fetchFailingMeters`);
+      setFailingMeters(response.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
   };
 
   useEffect(() => {
@@ -70,7 +52,7 @@ export default function Dashboard({ medidorInfo }) {
           <DetallesMedidor medidorInfo={medidorInfo} />
         </div>
         <div className="col-span-4 row-span-6 bg-gray-300 p-1 rounded-xl wrap-anywhere">
-          <Mapa />
+          <Mapa medidores={medidores} />
         </div>
         <div className="flex flex-col col-span-2 col-start-6 row-span-2 bg-gray-300 p-1 rounded-xl wrap-anywhere">
           <strong>Consumo de la Ciudad m3/hora</strong>

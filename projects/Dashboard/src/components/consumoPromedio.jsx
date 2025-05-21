@@ -14,7 +14,7 @@ const cx = 160; //centerX
 const cy = 120; //centerY
 const iR = 45; //innerRadious
 const oR = 100; //outerRadious
-const value = 560;
+// const value = 560;
 
 const needle = (value, data, cx, cy, iR, oR, color) => {
   let total = 0;
@@ -36,8 +36,16 @@ const needle = (value, data, cx, cy, iR, oR, color) => {
   const yp = y0 + length * sin;
 
   return [
-    <circle key="needle-circle" cx={x0} cy={y0} r={r} fill={color} stroke="none" />,
-    <path key="needle-path"
+    <circle
+      key="needle-circle"
+      cx={x0}
+      cy={y0}
+      r={r}
+      fill={color}
+      stroke="none"
+    />,
+    <path
+      key="needle-path"
       d={`M${xba} ${yba}L${xbb} ${ybb} L${xp} ${yp} L${xba} ${yba}`}
       stroke="#fff"
       fill={color}
@@ -46,21 +54,15 @@ const needle = (value, data, cx, cy, iR, oR, color) => {
 };
 
 export default function ConsumoPromedio() {
-  // const [value, setValue] = useState(0);
+  const [value, setValue] = useState(560);
 
   const fetchValue = async () => {
-    //     try {
-    //       const response = await axios.get(`${API_BASE_URL}/vuelos/vuelos/filtrados`, {
-    //         params: {
-    //           origen: airportOrigin,
-    //           destino: airportDestination,
-    //           fecha: date,
-    //         },
-    //       });
-    //       setValue(response.data);
-    //     } catch (error) {
-    //       console.error("Error fetching data:", error);
-    //     }
+    try {
+      const response = await axios.get(`${API_BASE_URL}/fetchConsumoPromedio`);
+      setValue(response.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
   };
 
   useEffect(() => {
@@ -93,7 +95,12 @@ export default function ConsumoPromedio() {
           textAnchor="middle"
           dominantBaseline="middle"
           style={{
-            fill: value < data[0].value ? "red" : value <= data[0].value + data[1].value ? "blue" : "red",
+            fill:
+              value < data[0].value
+                ? "red"
+                : value <= data[0].value + data[1].value
+                  ? "blue"
+                  : "red",
             fontSize: "1.5rem",
           }}
         >
