@@ -19,15 +19,15 @@ export default function Home() {
     },
   ]);
 
-  const fetchMedidores = async () => {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/fetchMedidoresHome`);
-      setMedidores(response.data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
-
+const fetchMedidores = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/fetchMedidoresHome`);
+    console.log("📦 Medidores recibidos:", response.data); // 👈 Asegúrate que tenga lat/lng
+    setMedidores(response.data);
+  } catch (error) {
+    console.error("Error al obtener medidores:", error);
+  }
+};
   useEffect(() => {
     fetchMedidores();
   }, [setMedidores]);

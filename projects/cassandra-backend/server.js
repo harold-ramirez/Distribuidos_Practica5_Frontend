@@ -30,65 +30,6 @@ app.use(cors()); // Habilita CORS para permitir solicitudes desde tu frontend
 // Define tus rutas de API----------------------------------------------------------------------------
 
 // Implementado
-app.get("/api/fetchMedidoresHome", async (req, res) => {
-  try {
-    // 1. Traer todas las lecturas (cada una representa un medidor instalado)
-    const lecturasQuery =
-      "SELECT idlectura, latitud, longitud, fk_idmedidor, fk_idusuario FROM LecturaMedidor ";
-    const lecturasResult = await client.execute(lecturasQuery);
-    const lecturas = lecturasResult.rows;
-
-    // 2. Obtener todos los medidores base
-    const medidoresQuery = "SELECT idmedidor, tipoMedidor, modelo FROM Medidor";
-    const medidoresResult = await client.execute(medidoresQuery);
-    const medidoresMap = {};
-    medidoresResult.rows.forEach((m) => {
-      medidoresMap[m.idmedidor.toString()] = m;
-    });
-
-    // 3. Obtener todos los usuarios
-    const usuariosQuery =
-      "SELECT idusuario, nombre, telefono, correoElectronico FROM Usuario";
-    const usuariosResult = await client.execute(usuariosQuery);
-    const usuariosMap = {};
-    usuariosResult.rows.forEach((u) => {
-      usuariosMap[u.idusuario.toString()] = u;
-    });
-
-    // 4. Obtener todos los contratos (para el número de contrato)
-    const contratosQuery =
-      "SELECT idcontrato, numeroContrato, fk_idusuario FROM Contrato";
-    const contratosResult = await client.execute(contratosQuery);
-    const contratosMap = {};
-    contratosResult.rows.forEach((c) => {
-      contratosMap[c.fk_idusuario.toString()] = c.numerocontrato;
-    });
-
-    // 5. Unir los datos
-    const data = lecturas.map((l) => {
-      const medidor = medidoresMap[l.fk_idmedidor?.toString()] || {};
-      const usuario = usuariosMap[l.fk_idusuario?.toString()] || {};
-      const numeroContrato = contratosMap[l.fk_idusuario?.toString()] || null;
-
-      return {
-        latitud: l.latitud,
-        longitud: l.longitud,
-        tipoMedidor: medidor.tipomedidor || null,
-        modelo: medidor.modelo || null,
-        numeroContrato: numeroContrato,
-        nombre: usuario.nombre || null,
-        telefono: usuario.telefono || null,
-        correoElectronico: usuario.correoelectronico || null,
-      };
-    });
-
-    res.json(data);
-  } catch (err) {
-    console.error("Error al obtener datos de medidores:", err);
-    res.status(500).json({ error: "Error al obtener datos" });
-  }
-});
-// Implementado
 app.get("/api/fetchConsumoMeses", async (req, res) => {
   try {
     const query =
@@ -390,7 +331,7 @@ app.get("/api/fetchMapaCalor", async (req, res) => {
   try {
     // Trae consumo, latitud y longitud de cada medidor instalado
     const query =
-      "SELECT consumo, latitud, longitud FROM LecturaMedidor WHERE estado = 1 AND fecha >= '2025-04-01T00:00:00+0000' AND fecha <= '2025-04-22T23:59:59+0000'  LIMIT 10000 ALLOW FILTERING;";
+      "SELECT consumo, latitud, longitud FROM LecturaMedidor WHERE estado = 1 AND fecha >= '2025-04-01T00:00:00+0000' AND fecha <= '2025-04-22T23:59:59+0000'  LIMIT 10000 ALLOW FILTERING";
     const result = await client.execute(query);
 
     // Construye el GeoJSON
@@ -460,6 +401,71 @@ res.json({ message: "Lectura registrada exitosamente" });
   }
 });
 
+
+app.get("/api/fetchMedidoresHome", async (req, res) => {
+  try {
+    // 1. Traer todas las lecturas (cada una representa un medidor instalado)
+    const lecturasQuery =
+      "SELECT idlectura, latitud, longitud, fk_idmedidor, fk_idusuario FROM LecturaMedidor WHERE estado = 1 AND fecha >= '2025-04-01T00:00:00+0000' AND fecha <= '2025-04-22T23:59:59+0000'  LIMIT 10000 ALLOW FILTERING";
+    const lecturasResult = await client.execute(lecturasQuery);
+    const lecturas = lecturasResult.rows;
+ 
+    // 2. Obtener todos los medidores base
+    const medidoresQuery = "SELECT idmedidor, tipoMedidor, modelo FROM Medidor";
+    const medidoresResult = await client.execute(medidoresQuery);
+    const medidoresMap = {};
+    medidoresResult.rows.forEach((m) => {
+      medidoresMap[m.idmedidor.toString()] = m;
+    });
+ 
+    // 3. Obtener todos los usuarios
+    const usuariosQuery =
+      "SELECT idusuario, nombre, telefono, correoElectronico FROM Usuario";
+    const usuariosResult = await client.execute(usuariosQuery);
+    // Normaliza los UUID a minúsculas y sin guiones para el mapeo
+    const usuariosMap = {};
+    usuariosResult.rows.forEach((u) => {
+      usuariosMap[u.idusuario.toString().toLowerCase()] = u;
+    });
+ 
+    // 4. Obtener todos los contratos (para el número de contrato)
+    const contratosQuery =
+      "SELECT idcontrato, numeroContrato, fk_idusuario FROM Contrato";
+    const contratosResult = await client.execute(contratosQuery);
+    // Mapeamos por fk_idusuario para encontrar el contrato de cada usuario
+    const usuarioToContrato = {};
+    contratosResult.rows.forEach((c) => {
+      if (c.fk_idusuario) {
+        usuarioToContrato[c.fk_idusuario.toString().toLowerCase()] = c.numerocontrato;
+      }
+    });
+ 
+    // 5. Unir los datos (normalizando los UUIDs)
+    const data = lecturas.map((l) => {
+      const medidor = medidoresMap[l.fk_idmedidor?.toString()] || {};
+      // Normaliza el UUID de usuario para buscarlo correctamente
+      const usuarioKey = l.fk_idusuario ? l.fk_idusuario.toString().toLowerCase() : null;
+      const usuario = usuarioKey ? usuariosMap[usuarioKey] : {};
+      const numeroContrato = usuarioKey ? usuarioToContrato[usuarioKey] : null;
+ 
+      return {
+        latitud: l.latitud,
+        longitud: l.longitud,
+        tipoMedidor: medidor.tipomedidor || null,
+        modelo: medidor.modelo || null,
+        numeroContrato: numeroContrato || null,
+        nombre: usuario?.nombre || null,
+        telefono: usuario?.telefono || null,
+        correoElectronico: usuario?.correoelectronico || null,
+      };
+    });
+ 
+    res.json(data);
+  } catch (err) {
+    console.error("Error al obtener datos de medidores:", err);
+    res.status(500).json({ error: "Error al obtener datos" });
+  }
+});
 //------------------------------------------------------------------------------------------------
 // Inicia el servidor-----------------------------------------------------------------------------
 app.listen(port, () => {
