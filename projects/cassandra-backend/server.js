@@ -1,18 +1,21 @@
 const express = require("express");
 const cassandra = require("cassandra-driver");
 const cors = require("cors"); // Importa cors
+const { DateTime } = require('luxon');
 
 const app = express();
 const port = 4000; //3001 // El puerto de tu backend (diferente al de Vite)
 
 // Configura el cliente de Cassandra
 const client = new cassandra.Client({
-  contactPoints: ["127.0.0.1"],
-  localDataCenter: "datacenter1", // Reemplaza con tu nombre de centro de datos
-  keyspace: "semapa", // Reemplaza con tu keyspace
-  // Si tienes autenticación en Cassandra:
-  // authProvider: new cassandra.auth.PlainTextAuthProvider('username', 'password')
+  contactPoints: ['127.0.0.1'],
+  localDataCenter: 'datacenter1',
+  keyspace: 'semapa',
+  socketOptions: {
+    readTimeout: 120000 // 2 minutos por ejemplo
+  }
 });
+
 
 // Conéctate a Cassandra (opcional, pero buena práctica para verificar la conexión al inicio)
 client
@@ -148,7 +151,7 @@ app.get("/api/fetchConsumoMeses", async (req, res) => {
 app.get("/api/fetchConsumoPromedio", async (req, res) => {
   try {
     const query =
-      "SELECT fk_idmedidor, fecha, consumo FROM LecturaMedidor";
+      "SELECT fk_idmedidor, fecha, consumo FROM LecturaMedidor WHERE estado = 1 AND fecha >= '2025-04-01T00:00:00+0000' AND fecha <= '2025-04-22T23:59:59+0000'  LIMIT 10000 ALLOW FILTERING;";
     const result = await client.execute(query);
 
     // Agrupa lecturas por medidor y por día
@@ -190,57 +193,68 @@ app.get("/api/fetchConsumoPromedio", async (req, res) => {
 app.get("/api/fetchConsumoZonas", async (req, res) => {
   try {
     // 1. Trae todas las lecturas con fk_idDistrito y consumo
-    const lecturasQuery =
-      "SELECT fk_iddistrito, consumo FROM LecturaMedidor";
+    const lecturasQuery = "SELECT fk_iddistrito, consumo FROM LecturaMedidor";
     const lecturasResult = await client.execute(lecturasQuery);
 
     // 2. Trae todos los subdistritos para mapear fk_idDistrito -> idSubDistrito
-    const subdistritosQuery =
-      "SELECT idsubdistrito, fk_iddistrito FROM SubDistrito";
+    const subdistritosQuery = "SELECT idsubdistrito, fk_iddistrito FROM SubDistrito";
     const subdistritosResult = await client.execute(subdistritosQuery);
 
     // 3. Trae todas las zonas y su fk_idsubdistrito
-    const zonasQuery = "SELECT idZona, nombreZona, fk_idsubdistrito FROM Zona";
+    const zonasQuery = "SELECT idzona, nombrezona, fk_idsubdistrito FROM Zona";
     const zonasResult = await client.execute(zonasQuery);
 
-    // 4. Construye los mapas para los joins manuales
+    // 4. Construye los mapas para los "joins" manuales (usando string para comparar UUID)
     const distritoToSubdistritos = {};
     subdistritosResult.rows.forEach((sd) => {
-      const distritoId = sd.fk_iddistrito.toString();
-      if (!distritoToSubdistritos[distritoId])
-        distritoToSubdistritos[distritoId] = [];
+      const distritoId = sd.fk_iddistrito?.toString();
+      if (!distritoId) return; // evitar datos inválidos
+
+      if (!distritoToSubdistritos[distritoId]) distritoToSubdistritos[distritoId] = [];
       distritoToSubdistritos[distritoId].push(sd.idsubdistrito.toString());
     });
 
     const subdistritoToZonas = {};
     zonasResult.rows.forEach((z) => {
-      const subdistritoId = z.fk_idsubdistrito.toString();
-      if (!subdistritoToZonas[subdistritoId])
-        subdistritoToZonas[subdistritoId] = [];
+      const subdistritoId = z.fk_idsubdistrito?.toString();
+      if (!subdistritoId) return;
+
+      if (!subdistritoToZonas[subdistritoId]) subdistritoToZonas[subdistritoId] = [];
       subdistritoToZonas[subdistritoId].push(z.nombrezona);
     });
 
-    // 5. Suma el consumo por zona
+    // 5. Suma el consumo por zona filtrando valores inválidos
     const consumoPorZona = {};
     lecturasResult.rows.forEach((l) => {
       const distritoId = l.fk_iddistrito?.toString();
-      const subdistritos = distritoToSubdistritos[distritoId] || [];
-      subdistritos.forEach((subdistritoId) => {
-        const zonas = subdistritoToZonas[subdistritoId] || [];
-        zonas.forEach((zona) => {
-          if (!consumoPorZona[zona]) consumoPorZona[zona] = 0;
-          consumoPorZona[zona] += l.consumo || 0;
+      if (!distritoId) return;
+
+      const consumo = l.consumo;
+      if (
+        consumo !== null &&
+        consumo !== undefined &&
+        typeof consumo === "number" &&
+        isFinite(consumo) &&
+        consumo > 0 &&
+        consumo < 1_000_000
+      ) {
+        const subdistritos = distritoToSubdistritos[distritoId] || [];
+        subdistritos.forEach((subdistritoId) => {
+          const zonas = subdistritoToZonas[subdistritoId] || [];
+          zonas.forEach((zona) => {
+            consumoPorZona[zona] = (consumoPorZona[zona] || 0) + consumo;
+          });
         });
-      });
+      }
     });
 
-    // 6. Prepara y ordena el arreglo de respuesta de mayor a menor
+    // 6. Preparar arreglo para la respuesta, ordenado por consumo descendente
     const data = Object.entries(consumoPorZona)
       .map(([name, consumo]) => ({
         name,
         consumo: Math.round(consumo * 100) / 100,
       }))
-      .sort((a, b) => b.consumo - a.consumo); // Orden descendente
+      .sort((a, b) => b.consumo - a.consumo);
 
     res.json(data);
   } catch (err) {
@@ -249,32 +263,70 @@ app.get("/api/fetchConsumoZonas", async (req, res) => {
   }
 });
 
-// fetchCityConsumption corregido
 app.get("/api/fetchCityConsumption", async (req, res) => {
   try {
-    const query =
-      "SELECT SUM(consumo) AS total_consumo FROM LecturaMedidor";
-    const result = await client.execute(
-      query,
-      [],
-      { consistency: cassandra.types.consistencies.localOne }  // <-- fuerza LOCAL_ONE
-    );
+    const estado = 1;
+    const limit = 10000; // máximo de filas a considerar
+    const query = `
+      SELECT consumo FROM lecturamedidor 
+      WHERE estado = ? ALLOW FILTERING;
+    `;
 
-    const raw = result.rows[0]?.total_consumo;
-    const total = raw && raw.toNumber ? raw.toNumber() : Number(raw);
-    res.json(Number(total.toFixed(2)));
+    const result = await client.execute(query, [estado], { prepare: true, fetchSize: 1000 });
+
+    let totalConsumo = 0;
+    let invalidCount = 0;
+    let rowCount = 0;
+
+    for (const row of result.rows) {
+      if (rowCount >= limit) break;
+
+      const value = row.consumo;
+      let consumo = typeof value?.toNumber === "function" ? value.toNumber() : Number(value);
+
+      if (!isNaN(consumo) && isFinite(consumo) && consumo > 0 && consumo < 1e6) {
+        totalConsumo += consumo;
+        rowCount++;
+      } else {
+        invalidCount++;
+        console.warn(`❌ Consumo descartado #${invalidCount}:`, value);
+      }
+    }
+
+    res.json({
+      totalConsumo: Number(totalConsumo.toFixed(2)),
+      registros: rowCount,
+      descartados: invalidCount
+    });
   } catch (err) {
-    console.error("Error al obtener consumo total de la ciudad:", err);
-    res.status(500).json({ error: "Error al obtener datos" });
+    console.error("🔥 Error al obtener consumo total de la ciudad:", err.message);
+    res.status(500).json({
+      error: "Error al obtener datos",
+      detalle: err.message,
+      tipo: err.code || "UNKNOWN"
+    });
   }
 });
+
+
+const executeWithRetry = async (query, params, retries = 3, delay = 1000) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await client.execute(query, params, { prepare: true });
+    } catch (err) {
+      console.warn(`⚠️ Intento ${i + 1} fallido:`, err.message);
+      if (i < retries - 1) await new Promise(res => setTimeout(res, delay));
+      else throw err;
+    }
+  }
+};
+
 
 app.get("/api/fetchWorkingMeters", async (req, res) => {
   try {
     // Consulta para traer idLectura que cumplan estado y fecha
     const query = `
-SELECT idLectura FROM LecturaMedidor WHERE estado = 1 AND fecha >= '2025-04-01T00:00:00+0000' AND fecha <= '2025-04-22T23:59:59+0000'  LIMIT 10000 ALLOW FILTERING;
-    `;
+SELECT idLectura FROM LecturaMedidor WHERE estado = 1 AND fecha >= '2025-04-01T00:00:00+0000' AND fecha <= '2025-04-22T23:59:59+0000'  LIMIT 10000 ALLOW FILTERING`;
 
     const result = await client.execute(query);
 
@@ -288,24 +340,41 @@ SELECT idLectura FROM LecturaMedidor WHERE estado = 1 AND fecha >= '2025-04-01T0
   }
 });
 
-router.get('/fetchFailingMeters', async (req, res) => {
+
+app.get("/api/fetchFailingMeters", async (req, res) => {
   try {
-    // Consulta 1: estado = 0
-    const resultEstado = await cassandra.execute(`
-      SELECT COUNT(*) AS total FROM LecturaMedidor 
-      WHERE estado = 0 ALLOW FILTERING;
-    `);
-    const totalEstado = resultEstado.rows[0]?.total?.toInt?.() ?? 0;
+    const startDate = new Date('2025-04-01T00:00:00Z');
+    const endDate = new Date('2025-04-01T00:00:00Z');
+    let totalEstado = 0;
 
-    // Consulta 2: error IS NOT NULL
-    const resultError = await cassandra.execute(`
-      SELECT COUNT(*) AS total FROM LecturaMedidor 
-      WHERE error IS NOT NULL ALLOW FILTERING;
-    `);
-    const totalError = resultError.rows[0]?.total?.toInt?.() ?? 0;
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      const from = new Date(d);
+      const to = new Date(d);
+      to.setDate(from.getDate() + 1);
 
-    // ⚠️ Evita duplicados si hay coincidencias en ambos criterios
-    const total = totalEstado + totalError; // opcionalmente, podrías deduplicar si guardas los IDs
+      const query = `
+        SELECT COUNT(*) AS total FROM LecturaMedidor
+        WHERE estado = 1 AND fecha >= ? AND fecha < ?
+        ALLOW FILTERING
+      `;
+
+      try {
+        // PASAMOS objetos Date directamente (NO ISOString)
+        const result = await client.execute(query, [from, to], { prepare: true });
+        const count = result.rows[0]?.total?.toInt?.() ?? 0;
+        totalEstado += count;
+      } catch (err) {
+        console.warn(`Error en consulta por fecha ${from.toISOString()}:`, err.message);
+      }
+    }
+
+    // Para obtener totalError, hacemos consulta sin filtro IS NOT NULL
+    const queryError = 'SELECT error FROM LecturaMedidor ALLOW FILTERING';
+    const resultError = await client.execute(queryError);
+    // Filtramos en JS
+    const totalError = resultError.rows.filter(row => row.error !== null).length;
+
+    const total = totalEstado + totalError;
     res.json({ count: total });
 
   } catch (error) {
@@ -315,12 +384,13 @@ router.get('/fetchFailingMeters', async (req, res) => {
 });
 
 
+
 // Implementado
 app.get("/api/fetchMapaCalor", async (req, res) => {
   try {
     // Trae consumo, latitud y longitud de cada medidor instalado
     const query =
-      "SELECT consumo, latitud, longitud FROM LecturaMedidor";
+      "SELECT consumo, latitud, longitud FROM LecturaMedidor WHERE estado = 1 AND fecha >= '2025-04-01T00:00:00+0000' AND fecha <= '2025-04-22T23:59:59+0000'  LIMIT 10000 ALLOW FILTERING;";
     const result = await client.execute(query);
 
     // Construye el GeoJSON
@@ -369,21 +439,21 @@ app.post("/api/registrarConsumo", async (req, res) => {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    const params = [
-      idlectura,
-      fk_idmedidor,
-      fk_idusuario,
-      consumo,
-      fecha,
-      latitud,
-      longitud,
-      estado,
-      fk_iddistrito,
-    ];
+   const params = [
+  idlectura,
+  fk_idmedidor,
+  fk_idusuario,
+  consumo,
+  fecha,
+  latitud,
+  longitud,
+  estado,
+  fk_iddistrito,
+];
 
-    await client.execute(query, params, { prepare: true });
+await client.execute(query, params, { prepare: true });
 
-    res.status(201).json({ message: "Lectura registrada correctamente" });
+res.json({ message: "Lectura registrada exitosamente" });
   } catch (err) {
     console.error("❌ Error al insertar lectura:", err);
     res.status(500).json({ error: "Error al insertar lectura" });

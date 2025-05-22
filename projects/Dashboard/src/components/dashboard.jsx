@@ -12,15 +12,27 @@ export default function Dashboard({ medidorInfo, medidores }) {
   const [workingMeters, setWorkingMeters] = useState(109309);
   const [failingMeters, setFailingMeters] = useState(9122);
 
-  const fetchCityConsumption = async () => {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/fetchCityConsumption`);
-      setCityConsumption(response.data.count ?? response.data);
+const fetchCityConsumption = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/fetchCityConsumption`);
+    const data = response.data;
 
-    } catch (error) {
-      console.error("Error fetching data:", error);
+    let value = 0;
+    if (typeof data === "number") {
+      value = data;
+    } else if (data && typeof data.totalConsumo === "number") {
+      value = data.totalConsumo;
+    } else {
+      console.warn("Formato de datos inesperado:", data);
     }
-  };
+
+    setCityConsumption(value);
+  } catch (error) {
+    console.error("Error fetching city consumption:", error);
+  }
+};
+
+
 
 const fetchWorkingMeters = async () => {
   try {
